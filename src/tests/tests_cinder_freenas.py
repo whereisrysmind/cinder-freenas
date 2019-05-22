@@ -36,17 +36,30 @@ class CinderFreeNASTest(test_utils.OpenStackBaseTest):
         cls.cinder_client = openstack_utils.get_cinder_session_client(
             cls.keystone_session)
 
-    def test_cinder_config(self):
+    def test_cinder_freenas_config(self):
         logging.info('freenas')
         expected_contents = {
             'cinder-freenas': {
                 'iscsi_helper': ['tgtadm'],
-                'volume_dd_blocksize': ['512']}}
+                'volume_dd_blocksize': ['512'],
+                'volume_driver': [
+                    'cinder.volume.drivers.ixsystems.iscsi.'
+                    'FreeNASISCSIDriver'],
+                'ixsystems_login': ['root'],
+                'ixsystems_password': ['password'],
+                'ixsystems_server_hostname': ['10.5.0.13'],
+                'ixsystems_volume_backend_name': [
+                    'iXsystems_FREENAS_Storage'],
+                'ixsystems_iqn_prefix': ['iqn.2005-10.org.freenas.ctl'],
+                'ixsystems_datastore_pool': ['vol1'],
+                'ixsystems_vendor_name': ['iXsystems'],
+                'ixsystems_storage_protocol': ['iscsi']}}
 
         zaza.model.run_on_leader(
             'cinder',
             'sudo cp /etc/cinder/cinder.conf /tmp/',
             model_name=self.model_name)
+
         zaza.model.block_until_oslo_config_entries_match(
             'cinder',
             '/tmp/cinder.conf',
